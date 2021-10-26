@@ -13,11 +13,33 @@ namespace _1_Wprowadzenie
         {
             var sciezka = @"c:\windows";
             PokazDuzePlikiBezLinq(sciezka);
+
             Console.WriteLine("*******************");
             PokazDuzePlikiZLinq(sciezka);
+
+            Console.WriteLine("*******************");
+            PokazDuzePlikiZLinq2(sciezka);
             
         }
+        /// <summary>
+        /// Method syntax
+        /// </summary>
+        /// <param name="sciezka"></param>
+        private static void PokazDuzePlikiZLinq2(string sciezka)
+        {
+            var zapytanie = new DirectoryInfo(sciezka).GetFiles()
+                            .OrderByDescending(p => p.Length)
+                            .Take(5);
+            foreach (var plik in zapytanie)
+            {
+                Console.WriteLine($"{plik.Name,-20} : {plik.Length / 1024,20:N0}KB");
+            }
+        }
 
+        /// <summary>
+        /// Query syntax
+        /// </summary>
+        /// <param name="sciezka"></param>
         private static void PokazDuzePlikiZLinq(string sciezka)
         {
             var zapytanie = from plik in new DirectoryInfo(sciezka).GetFiles()
