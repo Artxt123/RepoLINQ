@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-//using System.Linq;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,20 +24,29 @@ namespace _2_Funkcje
                 new Pracownik{Id = 6, Imie = "Marcin", Nazwisko = "Poradzisz"},
                 new Pracownik{Id = 7, Imie = "Tomasz", Nazwisko = "Nowak"}
             };
+
+            //Do metody statycznej, która jest zarazem rozszerzającą można odwołać się na dwa sposoby: 1) normalnie jak do metody statycznej; 2) jak do metody rozszerzającej
+            Console.WriteLine(NaszLinq.NaszCount(programisci));
+            Console.WriteLine(programisci.NaszCount());
+
+            //Podobnie jest dzięki Count z Linq:
+            Console.WriteLine(kierowcy.Count());
+
+
             //Dzięki temu, że tablica i lista mogą korzystać z IEnumerable<T>, możemy iterować po tych kolekcjach
-            foreach (var osoba in programisci)
-            {
-                Console.WriteLine($"{osoba.Imie} {osoba.Nazwisko}");
-            }
+            //foreach (var osoba in programisci)
+            //{
+            //    Console.WriteLine($"{osoba.Imie} {osoba.Nazwisko}");
+            //}
 
-            //Teraz zrobimy to samo co w pętli foreach, tylko krok po kroku:
+            ////Teraz zrobimy to samo co w pętli foreach, tylko krok po kroku:
 
-            IEnumerator<Pracownik> enumerator = kierowcy.GetEnumerator();
+            //IEnumerator<Pracownik> enumerator = kierowcy.GetEnumerator();
 
-            while (enumerator.MoveNext()) //MoveNext() zwraca true, gdy można przejść do nast. elementu; false gdy nie można
-            {
-                Console.WriteLine($"{enumerator.Current.Imie} {enumerator.Current.Nazwisko}");
-            }
+            //while (enumerator.MoveNext()) //MoveNext() zwraca true, gdy można przejść do nast. elementu; false gdy nie można
+            //{
+            //    Console.WriteLine($"{enumerator.Current.Imie} {enumerator.Current.Nazwisko}");
+            //}
         }
     }
 }
