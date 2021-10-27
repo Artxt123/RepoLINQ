@@ -10,6 +10,23 @@ namespace _2_Funkcje
     {
         static void Main(string[] args)
         {
+            //Func zawsze coś zwraca, określamy to jako ostatni parametr
+            Func<int, int> potegowanie = x => x * x;
+
+            //Najkrótsze wyrażenie lambda
+            //Func<int, int, int> dodawanie = (a, b) => a + b;
+            //Wyrażenie lambda można też bardziej rozbudować:
+            Func<int, int, int> dodawanie = (int a, int b) =>
+            {
+                var temp = a + b;
+                return temp;
+            };
+
+            //Action nic nie zwraca (tzn. zwraca void)
+            Action<int> wypisz = x => Console.WriteLine(x);
+
+            wypisz(potegowanie(dodawanie(9, 1)));
+
             IEnumerable<Pracownik> programisci = new Pracownik[]
             {
                 new Pracownik{Id = 1, Imie = "Marek", Nazwisko = "Rajkiewicz"},
@@ -25,22 +42,9 @@ namespace _2_Funkcje
                 new Pracownik{Id = 7, Imie = "Tomasz", Nazwisko = "Nowak"}
             };
 
-            //Do Where możemy podać metodę na 3 różne sposoby: 1) Metoda nazwana; 2) Metoda anonimowa (metoda inline); 3) Wyrażenie lambda
-            //1:Użycie w Where metody nazwanej
-            foreach (var osoba in programisci.Where(RozpoczynaNaM))
-            {
-                Console.WriteLine($"{osoba.Imie}");
-            }
-
-            //2:Metoda anonimowa (tzw. Metoda inline) to ta sama co metoda nazwana, tylko bez początku: public static bool Nazwa....; zamiast tego należy dodać słowo kluczowe delegate
-            foreach (var osoba in programisci.Where(delegate (Pracownik pracownik)
-                                                   { return pracownik.Imie.StartsWith("M"); }))
-            {
-                Console.WriteLine($"{osoba.Imie}");
-            }
-
-            //3: Wyrażenie lambda:
-            foreach (var osoba in programisci.Where(p => p.Imie.StartsWith("M")))
+            //Wypisujemy programistów, których imię ma 5 liter, posortowani po imionach w kolejności alfabeycznej od końca
+            foreach (var osoba in programisci.Where(p => p.Imie.Length == 5)
+                                             .OrderByDescending(p => p.Imie))
             {
                 Console.WriteLine($"{osoba.Imie}");
             }
