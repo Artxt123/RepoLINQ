@@ -25,28 +25,31 @@ namespace _2_Funkcje
                 new Pracownik{Id = 7, Imie = "Tomasz", Nazwisko = "Nowak"}
             };
 
-            //Do metody statycznej, która jest zarazem rozszerzającą można odwołać się na dwa sposoby: 1) normalnie jak do metody statycznej; 2) jak do metody rozszerzającej
-            Console.WriteLine(NaszLinq.NaszCount(programisci));
-            Console.WriteLine(programisci.NaszCount());
+            //Do Where możemy podać metodę na 3 różne sposoby: 1) Metoda nazwana; 2) Metoda anonimowa (metoda inline); 3) Wyrażenie lambda
+            //1:Użycie w Where metody nazwanej
+            foreach (var osoba in programisci.Where(RozpoczynaNaM))
+            {
+                Console.WriteLine($"{osoba.Imie}");
+            }
 
-            //Podobnie jest dzięki Count z Linq:
-            Console.WriteLine(kierowcy.Count());
+            //2:Metoda anonimowa (tzw. Metoda inline) to ta sama co metoda nazwana, tylko bez początku: public static bool Nazwa....; zamiast tego należy dodać słowo kluczowe delegate
+            foreach (var osoba in programisci.Where(delegate (Pracownik pracownik)
+                                                   { return pracownik.Imie.StartsWith("M"); }))
+            {
+                Console.WriteLine($"{osoba.Imie}");
+            }
 
+            //3: Wyrażenie lambda:
+            foreach (var osoba in programisci.Where(p => p.Imie.StartsWith("M")))
+            {
+                Console.WriteLine($"{osoba.Imie}");
+            }
+        }
 
-            //Dzięki temu, że tablica i lista mogą korzystać z IEnumerable<T>, możemy iterować po tych kolekcjach
-            //foreach (var osoba in programisci)
-            //{
-            //    Console.WriteLine($"{osoba.Imie} {osoba.Nazwisko}");
-            //}
-
-            ////Teraz zrobimy to samo co w pętli foreach, tylko krok po kroku:
-
-            //IEnumerator<Pracownik> enumerator = kierowcy.GetEnumerator();
-
-            //while (enumerator.MoveNext()) //MoveNext() zwraca true, gdy można przejść do nast. elementu; false gdy nie można
-            //{
-            //    Console.WriteLine($"{enumerator.Current.Imie} {enumerator.Current.Nazwisko}");
-            //}
+        //1. Metoda nazwana: przekazujemy jako: Where(RozpoczynaNaM)
+        private static bool RozpoczynaNaM(Pracownik pracownik)
+        {
+            return pracownik.Imie.StartsWith("M");
         }
     }
 }
