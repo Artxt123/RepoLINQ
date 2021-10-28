@@ -27,7 +27,7 @@ namespace _2_Funkcje
 
             wypisz(potegowanie(dodawanie(9, 1)));
 
-            IEnumerable<Pracownik> programisci = new Pracownik[]
+            var programisci = new Pracownik[]
             {
                 new Pracownik{Id = 1, Imie = "Marek", Nazwisko = "Rajkiewicz"},
                 new Pracownik{Id = 2, Imie = "Wojciech", Nazwisko = "Wiertlewski"},
@@ -35,7 +35,7 @@ namespace _2_Funkcje
                 new Pracownik{Id = 4, Imie = "Wojciech", Nazwisko = "Karbowiak"}
             };
 
-            IEnumerable<Pracownik> kierowcy = new List<Pracownik>()
+            var kierowcy = new List<Pracownik>()
             {
                 new Pracownik{Id = 5, Imie = "Michał", Nazwisko = "Andrzejak"},
                 new Pracownik{Id = 6, Imie = "Marcin", Nazwisko = "Poradzisz"},
@@ -43,8 +43,10 @@ namespace _2_Funkcje
             };
 
             //Wypisujemy programistów, których imię ma 5 liter, posortowani po imionach w kolejności alfabeycznej od końca
-            foreach (var osoba in programisci.Where(p => p.Imie.Length == 5)
-                                             .OrderByDescending(p => p.Imie))
+            var zapytanie = programisci.Where(p => p.Imie.Length == 5)
+                                       .OrderByDescending(p => p.Imie);
+
+            foreach (var osoba in zapytanie)
             {
                 Console.WriteLine($"{osoba.Imie}");
             }
