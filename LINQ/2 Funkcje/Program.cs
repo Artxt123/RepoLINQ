@@ -44,12 +44,21 @@ namespace _2_Funkcje
 
             //Wypisujemy programistów, których imię ma 5 liter, posortowani po imionach w kolejności alfabeycznej od końca
             var zapytanie = programisci.Where(p => p.Imie.Length == 5)
-                                       .OrderByDescending(p => p.Imie);
+                                       .OrderByDescending(p => p.Imie)
+                                       .Select(p => p); //Select w Method Syntax jest opcjonalny, nie trzeba tego pisać.
 
-            foreach (var osoba in zapytanie)
+            var zapytanie2 = from programista in programisci
+                                 where programista.Imie.Length == 5
+                                 orderby programista.Imie descending
+                                 select programista;
+
+            var iloscZwróconychZapytan = zapytanie2.Count();
+
+            foreach (var osoba in zapytanie2)
             {
                 Console.WriteLine($"{osoba.Imie}");
             }
+            Console.WriteLine(iloscZwróconychZapytan);
         }
 
         //1. Metoda nazwana: przekazujemy jako: Where(RozpoczynaNaM)
