@@ -8,6 +8,14 @@ namespace _3_Zapytania
     {
         static void Main(string[] args)
         {
+            //Używając operatorów strumieniowych możemy działać na praktycznie nieskończonych kolekcjach (tak jak ta poniżej, ponieważ w nieskończoność generuje liczby)
+            var liczby = NaszLinq.LiczbyLosowe().Where(l => l > 0.5).Take(10);
+
+            foreach (var liczba in liczby)
+            {
+                Console.WriteLine(liczba);
+            }
+
             var filmy = new List<Film>
             {
                 new Film{Tytul = "Siedem", Gatunek = "Thriller", Ocena = 8.3f, Rok = 1995},
@@ -21,8 +29,13 @@ namespace _3_Zapytania
             };
 
             //Where jest typu strumieniowego, OrderBy nie jest.
-            var zapytanie = filmy.Where(f => f.Rok > 2002)
-                                 .OrderByDescending(f => f.Ocena);
+            //Tabelka co jest wykonywane natychamistowo; odroczone i strumieniowo; odroczone i niestrumieniowo:
+            //https://docs.microsoft.com/pl-pl/dotnet/csharp/programming-guide/concepts/linq/classification-of-standard-query-operators-by-manner-of-execution
+
+            var zapytanie = from film in filmy
+                            where film.Rok > 2002
+                            orderby film.Ocena descending
+                            select film;
 
             var enumerator = zapytanie.GetEnumerator();
 
