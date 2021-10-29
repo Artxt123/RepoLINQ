@@ -22,9 +22,11 @@ namespace _3_Zapytania
 
             var zapytanie = filmy.Filtr(f => f.Rok > 2002);
 
-            foreach (var film in zapytanie)
+            var enumerator = zapytanie.GetEnumerator();
+
+            while (enumerator.MoveNext())
             {
-                Console.WriteLine(film.Tytul);
+                Console.WriteLine(enumerator.Current.Tytul);
             }
         }
     }
