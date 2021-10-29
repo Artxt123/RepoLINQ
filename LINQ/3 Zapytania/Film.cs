@@ -13,7 +13,6 @@ namespace _3_Zapytania
         {
             get
             {
-                throw new Exception("Error!!!");
                 Console.WriteLine($"Zwraca {_rok} i {Tytul}");
                 return _rok;
             }
