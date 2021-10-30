@@ -19,12 +19,26 @@ namespace Samochody
             //CultureInfo.CurrentCulture = newCulture;
             #endregion
 
-            var samochody = WczytywaniePliku("paliwo.csv");
+            var samochody = WczytywaniePliku2("paliwo.csv");
 
             foreach (var samochod in samochody)
             {
                 Console.WriteLine($"{samochod.Producent} {samochod.Model}");
             }
+        }
+
+        /// <summary>
+        /// To samo co metoda WczytywaniePliku, tylko z wykorzytsaniem Query syntax
+        /// </summary>
+        /// <param name="sciezka">Scieżka do pliku</param>
+        /// <returns></returns>
+        private static List<Samochod> WczytywaniePliku2(string sciezka)
+        {
+            var zapytanie = from linia in File.ReadAllLines(sciezka).Skip(1)
+                            where linia.Length > 1
+                            select Samochod.ParsujCSV(linia);
+
+            return zapytanie.ToList();
         }
 
         private static List<Samochod> WczytywaniePliku(string sciezka)

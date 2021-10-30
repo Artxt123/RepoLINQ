@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+
 namespace Samochody
 {
     public class Samochod
@@ -17,7 +18,7 @@ namespace Samochody
         {
             var kolumny = linia.Split(','); //dzielimy każdą linię na kolumny; przy założeniu, że każda kolumna oddzielona jest od następnej przecinkiem
 
-            //Potrzebuję tego, bo inaczej dane nie chcą przejść; u mnie w csv liczby double musiałby mieć przecinek, a tam są kropki
+            //Potrzebuję tego, bo inaczej dane nie chcą przejść; u mnie w csv liczby, które chcę zapisać jako double musiałby mieć przecinek, a tam są kropki
             double.TryParse(kolumny[3], NumberStyles.Any, CultureInfo.InvariantCulture, out double pojemnosc);
 
             return new Samochod
