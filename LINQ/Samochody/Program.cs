@@ -32,15 +32,31 @@ namespace Samochody
                              orderby samochod.SpalanieAutostrada descending, samochod.Producent ascending
                              select samochod;
 
-            if (zapytanie != null)
-            {
-                Console.WriteLine($"{zapytanie.Producent} {zapytanie.Model} : {zapytanie.SpalanieAutostrada}");
-            }
+            //Sprawdza CZY JAKIKOLWIEK samochód z list jest BMW - true
+            var zapytanieAny = samochody.Any(s => s.Producent == "BMW");
 
-            foreach (var samochod in zapytanie2.Take(10))
-            {
-                Console.WriteLine($"{samochod.Producent} {samochod.Model} : {samochod.SpalanieAutostrada}");
-            }
+            //Sprawdza CZY WSZYSTKIE samochody na liście są BMW - false
+            var zapytanieAll = samochody.All(s => s.Producent == "BMW");
+
+            //Sprawdza czy lista samochody ma jakiś samochód na indeksie nr 5 - true
+            var zapytanieContains = samochody.Contains<Samochod>(samochody[5]);
+            //Sprawdza czy lista samochody ma jakiś NOWY samochód - false
+            var zapytanieContains2 = samochody.Contains<Samochod>(new Samochod());
+
+            Console.WriteLine(zapytanieAny);
+            Console.WriteLine(zapytanieAll);
+            Console.WriteLine(zapytanieContains);
+            Console.WriteLine(zapytanieContains2);
+
+            //if (zapytanie != null)
+            //{
+            //    Console.WriteLine($"{zapytanie.Producent} {zapytanie.Model} : {zapytanie.SpalanieAutostrada}");
+            //}
+
+            //foreach (var samochod in zapytanie2.Take(10))
+            //{
+            //    Console.WriteLine($"{samochod.Producent} {samochod.Model} : {samochod.SpalanieAutostrada}");
+            //}
         }
 
         /// <summary>
