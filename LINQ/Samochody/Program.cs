@@ -22,26 +22,30 @@ namespace Samochody
             var samochody = WczytywaniePliku("paliwo.csv");
 
             //Sortujemy samochody po najoszczędniejszym spalaniu na autostradzie malejąco; następnie alfabetycznie po nazwie producenta
-            var zapytanie = samochody.Where(s => s.Producent == "Audi" && s.Rok == 2018)
-                                     .OrderByDescending(s => s.SpalanieAutostrada)
-                                     .ThenBy(s => s.Producent)
-                                     //Wybieramy tylko te dane, które potrzebujemy tworząc w tym celu nowy anonimowy obiekt:
-                                     .Select(s => new { s.Producent, s.Model, s.SpalanieAutostrada });
-
-            var zapytanie2 = from samochod in samochody
+            var zapytanie = from samochod in samochody
                              where samochod.Producent == "Audi" && samochod.Rok == 2018
-                             orderby samochod.SpalanieAutostrada descending, samochod.Producent ascending
-                             select new
+                             orderby samochod.SpalanieAutostrada descending, samochod.Producent ascending //ascending jest zawsze domyślnym sposobem sortowania i w sumie nie trzeba tego pisać
+                            //Wybieramy tylko te dane, które potrzebujemy tworząc w tym celu nowy anonimowy obiekt:
+                            select new
                              {
                                  samochod.Producent,
                                  samochod.Model,
                                  samochod.SpalanieAutostrada
                              };
 
-            foreach (var samochod in zapytanie2.Take(10))
+            //SelectMany spłaszcza wszystkie kolekcje, które otrzymujemy w wyniku zapytania:
+            //W tym przypadku noramlnie otrzymalibyśmy stringi z nazwą producenta, a string to kolekcja charów; dzięki SelectMany otzrymamy od razu same litery tzn. IEnumerable<char>
+            var zapytanie2 = samochody.SelectMany(s => s.Producent).OrderBy(s => s);
+
+            foreach (var litera in zapytanie2)
             {
-                Console.WriteLine($"{samochod.Producent} {samochod.Model} : {samochod.SpalanieAutostrada}");
+                    Console.WriteLine(litera);
             }
+
+            //foreach (var samochod in zapytanie.Take(10))
+            //{
+            //    Console.WriteLine($"{samochod.Producent} {samochod.Model} : {samochod.SpalanieAutostrada}");
+            //}
         }
 
 
