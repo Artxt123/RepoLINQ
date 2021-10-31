@@ -19,67 +19,85 @@ namespace Samochody
             //CultureInfo.CurrentCulture = newCulture;
             #endregion
 
-            var samochody = WczytywaniePliku2("paliwo.csv");
+            var samochody = WczytywaniePliku("paliwo.csv");
 
             //Sortujemy samochody po najoszczędniejszym spalaniu na autostradzie malejąco; następnie alfabetycznie po nazwie producenta
-            var zapytanie = samochody.OrderByDescending(s => s.SpalanieAutostrada)
+            var zapytanie = samochody.Where(s => s.Producent == "Audi" && s.Rok == 2018)
+                                     .OrderByDescending(s => s.SpalanieAutostrada)
                                      .ThenBy(s => s.Producent)
-                                     .Select(s => s)
-                                     .FirstOrDefault(s => s.Producent == "ccc" && s.Rok == 2018);
+                                     //Wybieramy tylko te dane, które potrzebujemy tworząc w tym celu nowy anonimowy obiekt:
+                                     .Select(s => new { s.Producent, s.Model, s.SpalanieAutostrada });
 
             var zapytanie2 = from samochod in samochody
                              where samochod.Producent == "Audi" && samochod.Rok == 2018
                              orderby samochod.SpalanieAutostrada descending, samochod.Producent ascending
-                             select samochod;
+                             select new
+                             {
+                                 samochod.Producent,
+                                 samochod.Model,
+                                 samochod.SpalanieAutostrada
+                             };
 
-            //Sprawdza CZY JAKIKOLWIEK samochód z list jest BMW - true
-            var zapytanieAny = samochody.Any(s => s.Producent == "BMW");
-
-            //Sprawdza CZY WSZYSTKIE samochody na liście są BMW - false
-            var zapytanieAll = samochody.All(s => s.Producent == "BMW");
-
-            //Sprawdza czy lista samochody ma jakiś samochód na indeksie nr 5 - true
-            var zapytanieContains = samochody.Contains<Samochod>(samochody[5]);
-            //Sprawdza czy lista samochody ma jakiś NOWY samochód - false
-            var zapytanieContains2 = samochody.Contains<Samochod>(new Samochod());
-
-            Console.WriteLine(zapytanieAny);
-            Console.WriteLine(zapytanieAll);
-            Console.WriteLine(zapytanieContains);
-            Console.WriteLine(zapytanieContains2);
-
-            //if (zapytanie != null)
-            //{
-            //    Console.WriteLine($"{zapytanie.Producent} {zapytanie.Model} : {zapytanie.SpalanieAutostrada}");
-            //}
-
-            //foreach (var samochod in zapytanie2.Take(10))
-            //{
-            //    Console.WriteLine($"{samochod.Producent} {samochod.Model} : {samochod.SpalanieAutostrada}");
-            //}
+            foreach (var samochod in zapytanie2.Take(10))
+            {
+                Console.WriteLine($"{samochod.Producent} {samochod.Model} : {samochod.SpalanieAutostrada}");
+            }
         }
 
-        /// <summary>
-        /// To samo co metoda WczytywaniePliku, tylko z wykorzytsaniem Query syntax
-        /// </summary>
-        /// <param name="sciezka">Scieżka do pliku</param>
-        /// <returns></returns>
-        private static List<Samochod> WczytywaniePliku2(string sciezka)
-        {
-            var zapytanie = from linia in File.ReadAllLines(sciezka).Skip(1)
-                            where linia.Length > 1
-                            select Samochod.ParsujCSV(linia);
-
-            return zapytanie.ToList();
-        }
 
         private static List<Samochod> WczytywaniePliku(string sciezka)
         {
             return File.ReadAllLines(sciezka)
                        .Skip(1) //pomijamy pierwszą linię z pliku csv, która jest nagłówkiem
                        .Where(linia => linia.Length > 1) //filtrujemy i odrzucamy linie, które nie mają w sobie danych, (przy założeniu, że jak linia ma 1 lub 0 znaków, to ta linia nie ma danych)
-                       .Select(Samochod.ParsujCSV) //przekształcamy pobrane linie na obiekty typu Samochod, dzięki metodzie ParsujCSV
-                       .ToList(); //Zamieniamy pobrane dane na listę samochodów
+                       .WSamochod() //Taki nasz select
+                       .ToList();
+        }
+
+        /// <summary>
+        /// STARE To samo co metoda WczytywaniePliku, tylko z wykorzytsaniem Query syntax
+        /// </summary>
+        /// <param name="sciezka">Scieżka do pliku</param>
+        /// <returns></returns>
+        //private static List<Samochod> WczytywaniePliku2(string sciezka)
+        //{
+        //    var zapytanie = from linia in File.ReadAllLines(sciezka).Skip(1)
+        //                    where linia.Length > 1
+        //                    select Samochod.ParsujCSV(linia);
+
+        //    return zapytanie.ToList();
+        //}
+    }
+
+    public static class SamochodRozszerzenie
+    {
+        /// <summary>
+        /// Taki nasz własny select, który od razu przekształca przefiltorowane dane w obiekty typu: Samochod
+        /// </summary>
+        /// <param name="zrodlo"></param>
+        /// <returns></returns>
+        public static IEnumerable<Samochod> WSamochod(this IEnumerable<string> zrodlo)
+        {
+            foreach (var linia in zrodlo)
+            {
+                var kolumny = linia.Split(','); //dzielimy każdą linię na kolumny; przy założeniu, że każda kolumna oddzielona jest od następnej przecinkiem
+
+                //Potrzebuję tego, bo inaczej dane nie chcą przejść; u mnie w csv liczby, które chcę zapisać jako double musiałby mieć przecinek, a tam są kropki
+                double.TryParse(kolumny[3], NumberStyles.Any, CultureInfo.InvariantCulture, out double pojemnosc);
+
+                yield return new Samochod
+                {
+                    Rok = int.Parse(kolumny[0]),
+                    Producent = kolumny[1],
+                    Model = kolumny[2],
+                    Pojemnosc = pojemnosc,
+                    IloscCylindrow = int.Parse(kolumny[4]),
+                    SpalanieMiasto = int.Parse(kolumny[5]),
+                    SpalanieAutostrada = int.Parse(kolumny[6]),
+                    SpalanieMieszane = int.Parse(kolumny[7])
+                };
+            }
+
         }
     }
 }
