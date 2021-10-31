@@ -19,7 +19,8 @@ namespace Samochody
             //CultureInfo.CurrentCulture = newCulture;
             #endregion
 
-            var samochody = WczytywaniePliku("paliwo.csv");
+            var samochody = WczytywanieSamochodu("paliwo.csv");
+            var producenci = WczytywanieProducenci("producent.csv");
 
             //Sortujemy samochody po najoszczędniejszym spalaniu na autostradzie malejąco; następnie alfabetycznie po nazwie producenta
             var zapytanie = from samochod in samochody
@@ -33,23 +34,31 @@ namespace Samochody
                                  samochod.SpalanieAutostrada
                              };
 
-            //SelectMany spłaszcza wszystkie kolekcje, które otrzymujemy w wyniku zapytania:
-            //W tym przypadku noramlnie otrzymalibyśmy stringi z nazwą producenta, a string to kolekcja charów; dzięki SelectMany otzrymamy od razu same litery tzn. IEnumerable<char>
-            var zapytanie2 = samochody.SelectMany(s => s.Producent).OrderBy(s => s);
-
-            foreach (var litera in zapytanie2)
+            foreach (var samochod in zapytanie.Take(10))
             {
-                    Console.WriteLine(litera);
+                Console.WriteLine($"{samochod.Producent} {samochod.Model} : {samochod.SpalanieAutostrada}");
             }
-
-            //foreach (var samochod in zapytanie.Take(10))
-            //{
-            //    Console.WriteLine($"{samochod.Producent} {samochod.Model} : {samochod.SpalanieAutostrada}");
-            //}
         }
 
+        private static List<Producent> WczytywanieProducenci(string sciezka)
+        {
+            var zapytanie = File.ReadAllLines(sciezka)
+                                .Skip(1)
+                                .Where(linia => linia.Length > 1)
+                                .Select(l =>
+                                {
+                                    var kolumny = l.Split(',');
+                                    return new Producent
+                                    {
+                                        Nazwa = kolumny[0],
+                                        Siedziba = kolumny[1],
+                                        Rok = int.Parse(kolumny[2]),
+                                    };
+                                });
+            return zapytanie.ToList();
+        }
 
-        private static List<Samochod> WczytywaniePliku(string sciezka)
+        private static List<Samochod> WczytywanieSamochodu(string sciezka)
         {
             return File.ReadAllLines(sciezka)
                        .Skip(1) //pomijamy pierwszą linię z pliku csv, która jest nagłówkiem
