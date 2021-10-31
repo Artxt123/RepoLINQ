@@ -22,12 +22,20 @@ namespace Samochody
             var samochody = WczytywaniePliku2("paliwo.csv");
 
             //Sortujemy samochody po najoszczędniejszym spalaniu na autostradzie malejąco; następnie alfabetycznie po nazwie producenta
-            var zapytanie = samochody.OrderByDescending(s => s.SpalanieAutostrada).ThenBy(s => s.Producent);
+            var zapytanie = samochody.OrderByDescending(s => s.SpalanieAutostrada)
+                                     .ThenBy(s => s.Producent)
+                                     .Select(s => s)
+                                     .FirstOrDefault(s => s.Producent == "ccc" && s.Rok == 2018);
 
-            //Samochody posortowane po najgorszym wyniku spalania na autostradzie, następnie po nazwie producenta
             var zapytanie2 = from samochod in samochody
-                             orderby samochod.SpalanieAutostrada ascending, samochod.Producent ascending
+                             where samochod.Producent == "Audi" && samochod.Rok == 2018
+                             orderby samochod.SpalanieAutostrada descending, samochod.Producent ascending
                              select samochod;
+
+            if (zapytanie != null)
+            {
+                Console.WriteLine($"{zapytanie.Producent} {zapytanie.Model} : {zapytanie.SpalanieAutostrada}");
+            }
 
             foreach (var samochod in zapytanie2.Take(10))
             {
