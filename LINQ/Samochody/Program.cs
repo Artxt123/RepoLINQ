@@ -22,19 +22,33 @@ namespace Samochody
             var samochody = WczytywanieSamochodu("paliwo.csv");
             var producenci = WczytywanieProducenci("producent.csv");
 
-            var zapytanie = from samochod in samochody
-                            group samochod by samochod.Producent.ToUpper() into producent //grupujemy samochody po nazwie producenta, którą dla ujednolicenia zamieniamy wszędzie na wielkiej litery; dodatkwo otrzymujemy grupę, którą przekzaujemy do zmiennej "producenci", aby móc dalej odwoływać się do niej w tym zapytaniu
-                            orderby producent.Key //sortujemy alfabetycznie po nazwie producenta
-                            select producent; //składania zapytania musi sie kończy select lub group
+            //GroupJoin - tutaj do producentów dołączamy samochody i grupujemy pod nazwą producenta
+            var zapytanie = from producent in producenci
+                            join samochod in samochody
+                                on producent.Nazwa equals samochod.Producent into SamochodGrupa //Pod nazwą producenta grupujemy samochody, które do niego są przypisane
+                            orderby producent.Nazwa
+                            select new
+                            {
+                                Producent = producent,
+                                Samochod = SamochodGrupa
+                            };
 
-            var zapytanie2 = samochody.GroupBy(s => s.Producent.ToUpper())
-                                      .OrderBy(g => g.Key);
+
+            var zapytanie2 = producenci.GroupJoin(samochody,
+                                                  p => p.Nazwa,
+                                                  s => s.Producent,
+                                                  (p, g) => new
+                                                  {
+                                                      Producent = p,
+                                                      Samochod = g
+                                                  })
+                                        .OrderBy(p => p.Producent.Nazwa);
 
             //Wyświetlamy po 2 najbardziej paliwo oszczędne samochody na autostradzie od każdego producenta
             foreach (var grupa in zapytanie2)
             {
-                Console.WriteLine(grupa.Key);
-                foreach (var samochod in grupa.OrderByDescending(s => s.SpalanieAutostrada).Take(2))
+                Console.WriteLine($"{grupa.Producent.Nazwa} : {grupa.Producent.Siedziba}");
+                foreach (var samochod in grupa.Samochod.OrderByDescending(s => s.SpalanieAutostrada).Take(2))
                 {
                     Console.WriteLine($"\t{samochod.Model} : {samochod.SpalanieAutostrada}");
                 }
