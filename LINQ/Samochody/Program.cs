@@ -35,18 +35,20 @@ namespace Samochody
                             orderby wynik.Max descending
                             select wynik;
 
-            var zapytanie2 = producenci.GroupJoin(samochody,
-                                                  p => p.Nazwa,
-                                                  s => s.Producent,
-                                                  (p, g) => new
-                                                  {
-                                                      Producent = p,
-                                                      Samochod = g
-                                                  })
-                                        .OrderBy(p => p.Producent.Siedziba)
-                                        .GroupBy(s => s.Producent.Siedziba);
+            var zapytanie2 = samochody.GroupBy(s => s.Producent)
+                                      .Select(g =>
+                                      {
+                                          return new
+                                          {
+                                              Nazwa = g.Key,
+                                              Max = g.Max(s => s.SpalanieAutostrada),
+                                              Min = g.Min(s => s.SpalanieAutostrada),
+                                              Srednia = g.Average(s => s.SpalanieAutostrada)
+                                          };
+                                      })
+                                      .OrderByDescending(s => s.Max);
 
-            foreach (var wynik in zapytanie)
+            foreach (var wynik in zapytanie2)
             {
                 Console.WriteLine($"{wynik.Nazwa}");
                 Console.WriteLine($"\t Max: {wynik.Max}");
