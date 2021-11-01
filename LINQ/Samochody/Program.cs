@@ -25,14 +25,14 @@ namespace Samochody
             //GroupJoin - tutaj do producentów dołączamy samochody i grupujemy pod nazwą producenta
             var zapytanie = from producent in producenci
                             join samochod in samochody
-                                on producent.Nazwa equals samochod.Producent into SamochodGrupa //Pod nazwą producenta grupujemy samochody, które do niego są przypisane
-                            orderby producent.Nazwa
+                                on producent.Nazwa equals samochod.Producent into SamochodGrupa
+                            orderby producent.Siedziba
                             select new
                             {
                                 Producent = producent,
                                 Samochod = SamochodGrupa
-                            };
-
+                            } into wynik
+                            group wynik by wynik.Producent.Siedziba; //otrzymane wyniki selecta grupujemy po Nazwie siedziby producenta
 
             var zapytanie2 = producenci.GroupJoin(samochody,
                                                   p => p.Nazwa,
@@ -42,13 +42,16 @@ namespace Samochody
                                                       Producent = p,
                                                       Samochod = g
                                                   })
-                                        .OrderBy(p => p.Producent.Nazwa);
+                                        .OrderBy(p => p.Producent.Siedziba)
+                                        .GroupBy(s => s.Producent.Siedziba);
 
-            //Wyświetlamy po 2 najbardziej paliwo oszczędne samochody na autostradzie od każdego producenta
+            //Wyświetlamy po 3 najbardziej paliwo oszczędne samochody na autostradzie z każdego kraju
             foreach (var grupa in zapytanie2)
             {
-                Console.WriteLine($"{grupa.Producent.Nazwa} : {grupa.Producent.Siedziba}");
-                foreach (var samochod in grupa.Samochod.OrderByDescending(s => s.SpalanieAutostrada).Take(2))
+                Console.WriteLine($"{grupa.Key}");
+                foreach (var samochod in grupa.SelectMany(g => g.Samochod)  //aby dostać się do spalaniaNaAutostradzie musimy spłaszczyć wszystkie samochody; używając zwykłego selecta dostalibyśmy sekwencję sekwencji; tutaj mamy od razu wszystkie samochody
+                                              .OrderByDescending(s => s.SpalanieAutostrada)
+                                              .Take(3))
                 {
                     Console.WriteLine($"\t{samochod.Model} : {samochod.SpalanieAutostrada}");
                 }
