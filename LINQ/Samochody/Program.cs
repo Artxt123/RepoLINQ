@@ -22,17 +22,18 @@ namespace Samochody
             var samochody = WczytywanieSamochodu("paliwo.csv");
             var producenci = WczytywanieProducenci("producent.csv");
 
-            //GroupJoin - tutaj do producentów dołączamy samochody i grupujemy pod nazwą producenta
-            var zapytanie = from producent in producenci
-                            join samochod in samochody
-                                on producent.Nazwa equals samochod.Producent into SamochodGrupa
-                            orderby producent.Siedziba
+            //Chcemy uzyskać max, min i średnią wartość spalania na autostradzie dla każdego producenta
+            var zapytanie = from samochod in samochody
+                            group samochod by samochod.Producent into samochodGrupa
                             select new
                             {
-                                Producent = producent,
-                                Samochod = SamochodGrupa
-                            } into wynik
-                            group wynik by wynik.Producent.Siedziba; //otrzymane wyniki selecta grupujemy po Nazwie siedziby producenta
+                                Nazwa = samochodGrupa.Key,
+                                Max = samochodGrupa.Max(s => s.SpalanieAutostrada),
+                                Min = samochodGrupa.Min(s => s.SpalanieAutostrada),
+                                Srednia = samochodGrupa.Average(s => s.SpalanieAutostrada)
+                            } into wynik //zapisujemy do zmiennej wynik, aby jeszcze posortować to malejąco według największego wyniku, który wskazuje na najlepszą oszczędność paliwa na autostradzie
+                            orderby wynik.Max descending
+                            select wynik;
 
             var zapytanie2 = producenci.GroupJoin(samochody,
                                                   p => p.Nazwa,
@@ -45,16 +46,12 @@ namespace Samochody
                                         .OrderBy(p => p.Producent.Siedziba)
                                         .GroupBy(s => s.Producent.Siedziba);
 
-            //Wyświetlamy po 3 najbardziej paliwo oszczędne samochody na autostradzie z każdego kraju
-            foreach (var grupa in zapytanie2)
+            foreach (var wynik in zapytanie)
             {
-                Console.WriteLine($"{grupa.Key}");
-                foreach (var samochod in grupa.SelectMany(g => g.Samochod)  //aby dostać się do spalaniaNaAutostradzie musimy spłaszczyć wszystkie samochody; używając zwykłego selecta dostalibyśmy sekwencję sekwencji; tutaj mamy od razu wszystkie samochody
-                                              .OrderByDescending(s => s.SpalanieAutostrada)
-                                              .Take(3))
-                {
-                    Console.WriteLine($"\t{samochod.Model} : {samochod.SpalanieAutostrada}");
-                }
+                Console.WriteLine($"{wynik.Nazwa}");
+                Console.WriteLine($"\t Max: {wynik.Max}");
+                Console.WriteLine($"\t Min: {wynik.Min}");
+                Console.WriteLine($"\t Srednia: {wynik.Srednia}");
             }
         }
 
