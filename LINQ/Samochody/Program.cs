@@ -23,7 +23,9 @@ namespace Samochody
             var producenci = WczytywanieProducenci("producent.csv");
 
             var zapytanie = from samochod in samochody
-                            join producent in producenci on samochod.Producent equals producent.Nazwa
+                            join producent in producenci 
+                                on new { samochod.Producent, samochod.Rok }
+                                equals new { Producent = producent.Nazwa, producent.Rok } //aby equals działał to po obu stronach muszą być takie same nazwy; dlatego musieliśmy dodać słowo Producent przed producent.nazwa, bo producent.nazwa nie pasował do samochod.producent
                             orderby samochod.SpalanieAutostrada descending, samochod.Producent ascending //ascending jest zawsze domyślnym sposobem sortowania i w sumie nie trzeba tego pisać
                             //Wybieramy tylko te dane, które potrzebujemy tworząc w tym celu nowy anonimowy obiekt:
                             select new
@@ -33,6 +35,7 @@ namespace Samochody
                                  samochod.Model,
                                  samochod.SpalanieAutostrada
                              };
+
             #region Gdybyśmy chcieli pobrać tylko 4 właściwości jak w zapytaniu 1.
             //var zapytanie3 = samochody.Join(producenci,
             //                                s => s.Producent,
@@ -68,8 +71,8 @@ namespace Samochody
             #endregion
 
             var zapytanie2 = samochody.Join(producenci,
-                                            s => s.Producent,
-                                            p => p.Nazwa,
+                                            s => new { s.Producent, s.Rok },
+                                            p => new { Producent = p.Nazwa, p.Rok },
                                             (s, p) => new           //pobieramy wszystkie dane, cały samochod i cały producent do anonimowej zmiennej
                                             {
                                                 Samochod = s,
@@ -78,6 +81,10 @@ namespace Samochody
                                       .OrderByDescending(s => s.Samochod.SpalanieAutostrada)
                                       .ThenBy(s => s.Samochod.Producent);
                                      
+            //foreach (var samochod in zapytanie.Take(10))
+            //{
+            //    Console.WriteLine($"{samochod.Siedziba} - {samochod.Producent} {samochod.Model} : {samochod.SpalanieAutostrada}");
+            //}
             foreach (var samochod in zapytanie2.Take(10))
             {
                 Console.WriteLine($"{samochod.Producent.Siedziba} - {samochod.Samochod.Producent} {samochod.Samochod.Model} : {samochod.Samochod.SpalanieAutostrada}");
