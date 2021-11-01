@@ -22,13 +22,13 @@ namespace Samochody
             var samochody = WczytywanieSamochodu("paliwo.csv");
             var producenci = WczytywanieProducenci("producent.csv");
 
-            //Sortujemy samochody po najoszczędniejszym spalaniu na autostradzie malejąco; następnie alfabetycznie po nazwie producenta
             var zapytanie = from samochod in samochody
-                             where samochod.Producent == "Audi" && samochod.Rok == 2018
-                             orderby samochod.SpalanieAutostrada descending, samochod.Producent ascending //ascending jest zawsze domyślnym sposobem sortowania i w sumie nie trzeba tego pisać
+                            join producent in producenci on samochod.Producent equals producent.Nazwa
+                            orderby samochod.SpalanieAutostrada descending, samochod.Producent ascending //ascending jest zawsze domyślnym sposobem sortowania i w sumie nie trzeba tego pisać
                             //Wybieramy tylko te dane, które potrzebujemy tworząc w tym celu nowy anonimowy obiekt:
                             select new
                              {
+                                 producent.Siedziba,
                                  samochod.Producent,
                                  samochod.Model,
                                  samochod.SpalanieAutostrada
@@ -36,7 +36,7 @@ namespace Samochody
 
             foreach (var samochod in zapytanie.Take(10))
             {
-                Console.WriteLine($"{samochod.Producent} {samochod.Model} : {samochod.SpalanieAutostrada}");
+                Console.WriteLine($"{samochod.Siedziba} - {samochod.Producent} {samochod.Model} : {samochod.SpalanieAutostrada}");
             }
         }
 
@@ -66,20 +66,6 @@ namespace Samochody
                        .WSamochod() //Taki nasz select
                        .ToList();
         }
-
-        /// <summary>
-        /// STARE To samo co metoda WczytywaniePliku, tylko z wykorzytsaniem Query syntax
-        /// </summary>
-        /// <param name="sciezka">Scieżka do pliku</param>
-        /// <returns></returns>
-        //private static List<Samochod> WczytywaniePliku2(string sciezka)
-        //{
-        //    var zapytanie = from linia in File.ReadAllLines(sciezka).Skip(1)
-        //                    where linia.Length > 1
-        //                    select Samochod.ParsujCSV(linia);
-
-        //    return zapytanie.ToList();
-        //}
     }
 
     public static class SamochodRozszerzenie
