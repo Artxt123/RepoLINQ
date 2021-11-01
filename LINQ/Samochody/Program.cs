@@ -23,71 +23,21 @@ namespace Samochody
             var producenci = WczytywanieProducenci("producent.csv");
 
             var zapytanie = from samochod in samochody
-                            join producent in producenci 
-                                on new { samochod.Producent, samochod.Rok }
-                                equals new { Producent = producent.Nazwa, producent.Rok } //aby equals działał to po obu stronach muszą być takie same nazwy; dlatego musieliśmy dodać słowo Producent przed producent.nazwa, bo producent.nazwa nie pasował do samochod.producent
-                            orderby samochod.SpalanieAutostrada descending, samochod.Producent ascending //ascending jest zawsze domyślnym sposobem sortowania i w sumie nie trzeba tego pisać
-                            //Wybieramy tylko te dane, które potrzebujemy tworząc w tym celu nowy anonimowy obiekt:
-                            select new
-                             {
-                                 producent.Siedziba,
-                                 samochod.Producent,
-                                 samochod.Model,
-                                 samochod.SpalanieAutostrada
-                             };
+                            group samochod by samochod.Producent.ToUpper() into producent //grupujemy samochody po nazwie producenta, którą dla ujednolicenia zamieniamy wszędzie na wielkiej litery; dodatkwo otrzymujemy grupę, którą przekzaujemy do zmiennej "producenci", aby móc dalej odwoływać się do niej w tym zapytaniu
+                            orderby producent.Key //sortujemy alfabetycznie po nazwie producenta
+                            select producent; //składania zapytania musi sie kończy select lub group
 
-            #region Gdybyśmy chcieli pobrać tylko 4 właściwości jak w zapytaniu 1.
-            //var zapytanie3 = samochody.Join(producenci,
-            //                                s => s.Producent,
-            //                                p => p.Nazwa,
-            //                                (s, p) => new
-            //                                {
-            //                                    p.Siedziba,
-            //                                    s.Producent,
-            //                                    s.Model,
-            //                                    s.SpalanieAutostrada
-            //                                })
-            //                          .OrderByDescending(s => s.SpalanieAutostrada)
-            //                          .ThenBy(s => s.Producent);
-            #endregion
-            #region Gdybyśmy chcieli pobrać wszystkie dane i potem dopiero wybrać 4 właściwości
-            //var zapytanie2 = samochody.Join(producenci,
-            //                                s => s.Producent,
-            //                                p => p.Nazwa,
-            //                                (s, p) => new                   //pobieramy wszystkie dane, cały samochod i cały producent do anonimowej zmiennej
-            //                                {
-            //                                    Samochod = s,
-            //                                    Producent = p
-            //                                })
-            //                          .OrderByDescending(s => s.Samochod.SpalanieAutostrada)
-            //                          .ThenBy(s => s.Samochod.Producent)
-            //                          .Select(s => new
-            //                          {
-            //                              s.Producent.Siedziba,
-            //                              s.Samochod.Producent,
-            //                              s.Samochod.Model,
-            //                              s.Samochod.SpalanieAutostrada
-            //                          });
-            #endregion
+            var zapytanie2 = samochody.GroupBy(s => s.Producent.ToUpper())
+                                      .OrderBy(g => g.Key);
 
-            var zapytanie2 = samochody.Join(producenci,
-                                            s => new { s.Producent, s.Rok },
-                                            p => new { Producent = p.Nazwa, p.Rok },
-                                            (s, p) => new           //pobieramy wszystkie dane, cały samochod i cały producent do anonimowej zmiennej
-                                            {
-                                                Samochod = s,
-                                                Producent = p
-                                            })
-                                      .OrderByDescending(s => s.Samochod.SpalanieAutostrada)
-                                      .ThenBy(s => s.Samochod.Producent);
-                                     
-            //foreach (var samochod in zapytanie.Take(10))
-            //{
-            //    Console.WriteLine($"{samochod.Siedziba} - {samochod.Producent} {samochod.Model} : {samochod.SpalanieAutostrada}");
-            //}
-            foreach (var samochod in zapytanie2.Take(10))
+            //Wyświetlamy po 2 najbardziej paliwo oszczędne samochody na autostradzie od każdego producenta
+            foreach (var grupa in zapytanie2)
             {
-                Console.WriteLine($"{samochod.Producent.Siedziba} - {samochod.Samochod.Producent} {samochod.Samochod.Model} : {samochod.Samochod.SpalanieAutostrada}");
+                Console.WriteLine(grupa.Key);
+                foreach (var samochod in grupa.OrderByDescending(s => s.SpalanieAutostrada).Take(2))
+                {
+                    Console.WriteLine($"\t{samochod.Model} : {samochod.SpalanieAutostrada}");
+                }
             }
         }
 
