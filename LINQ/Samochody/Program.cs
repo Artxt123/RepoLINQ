@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Samochody
 {
@@ -19,42 +18,30 @@ namespace Samochody
             //CultureInfo.CurrentCulture = newCulture;
             #endregion
 
-            var samochody = WczytywanieSamochodu("paliwo.csv");
-            var producenci = WczytywanieProducenci("producent.csv");
+            var rekordy = WczytywanieSamochodu("paliwo.csv");
 
-            //Chcemy uzyskać max, min i średnią wartość spalania na autostradzie dla każdego producenta
-            var zapytanie = from samochod in samochody
-                            group samochod by samochod.Producent into samochodGrupa
-                            select new
-                            {
-                                Nazwa = samochodGrupa.Key,
-                                Max = samochodGrupa.Max(s => s.SpalanieAutostrada),
-                                Min = samochodGrupa.Min(s => s.SpalanieAutostrada),
-                                Srednia = samochodGrupa.Average(s => s.SpalanieAutostrada)
-                            } into wynik //zapisujemy do zmiennej wynik, aby jeszcze posortować to malejąco według największego wyniku, który wskazuje na najlepszą oszczędność paliwa na autostradzie
-                            orderby wynik.Max descending
-                            select wynik;
+            var dokument = new XDocument();
+            var samochody = new XElement("Samochody");
 
-            var zapytanie2 = samochody.GroupBy(s => s.Producent)
-                                      .Select(g =>
-                                      {
-                                          return new
-                                          {
-                                              Nazwa = g.Key,
-                                              Max = g.Max(s => s.SpalanieAutostrada),
-                                              Min = g.Min(s => s.SpalanieAutostrada),
-                                              Srednia = g.Average(s => s.SpalanieAutostrada)
-                                          };
-                                      })
-                                      .OrderByDescending(s => s.Max);
-
-            foreach (var wynik in zapytanie2)
+            foreach (var rekord in rekordy)
             {
-                Console.WriteLine($"{wynik.Nazwa}");
-                Console.WriteLine($"\t Max: {wynik.Max}");
-                Console.WriteLine($"\t Min: {wynik.Min}");
-                Console.WriteLine($"\t Srednia: {wynik.Srednia}");
+                var samochod = new XElement("Samochod");
+
+                var producent = new XElement("Producent", rekord.Producent);
+                var model = new XElement("Model", rekord.Model);
+                var spalanieAutostrada = new XElement("SpalanieAutostrada", rekord.SpalanieAutostrada);
+                var spalanieMiasto = new XElement("SpalanieMiasto", rekord.SpalanieMiasto);
+
+                samochod.Add(producent);
+                samochod.Add(model);
+                samochod.Add(spalanieAutostrada);
+                samochod.Add(spalanieMiasto);
+
+                samochody.Add(samochod);
             }
+            dokument.Add(samochody);
+            dokument.Save("paliwo.xml");
+
         }
 
         private static List<Producent> WczytywanieProducenci(string sciezka)
