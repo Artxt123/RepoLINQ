@@ -25,9 +25,13 @@ namespace Samochody
 
         private static void ZapytanieXML()
         {
+            //Jeżeli w danym XMLu są przestrzenie nazw to w zapytaniach również musimy się do nich odwoływać:
+            XNamespace ns = "http://jakasstrona.pl/samochody/2018";
+            XNamespace ex = "http://jakasstrona.pl/samochody/2018/ex";
+
             var dokument = XDocument.Load("paliwo.xml");
 
-            var zapytanie = from samochod in dokument.Element("Samochody").Elements("Samochod") //dłuższa, bezpieczniejsza wersja dostania się do elementu Samochod
+            var zapytanie = from samochod in dokument.Element(ns + "Samochody")?.Elements(ex + "Samochod") ?? Enumerable.Empty<XElement>() // ?? sprawi, że jak nie znajdzie Elementu "Samochody" to zostanie przekazany pusty Enumerable od XElement, aby Where, który jest dalej wywoływany nie zgłosił wyjątku; Pierwszy ? działałby jeżeli dalej nie byłoby where, wtedy po prostu nie znalezionoby dlszego elementu samochod
                             where samochod.Attribute("Producent")?.Value == "Ferrari" // ? sprawi, że jak nie będzie takiego atrybutu to zostanie przypisana wartość null; pomaga to gdy są atrybuty opcjonalne; wtedy dla tych elementów, które mają jakąś wartość pod tym atrybutem to zostanie ona zostanie zachowana; a tym co mają null lub w ogóle nie ma tego atrybutu to zostanie przypisane null i program nie zgłosi wyjątku
                             select new
                             {
@@ -35,7 +39,7 @@ namespace Samochody
                                Model = samochod.Attribute("Model").Value
                             };
 
-            var zapytanie2 = dokument.Descendants("Samochod") // krótsza bardziej niebezpieczna wersja, która mówi: dajcie mi którychkolwiek POTOMKÓW o nazwie "Samochod"
+            var zapytanie2 = dokument.Descendants(ex + "Samochod") // krótsza bardziej niebezpieczna wersja, która mówi: dajcie mi którychkolwiek POTOMKÓW o nazwie "Samochod"
                                      .Where(s => s.Attribute("Producent").Value == "Ferrari")
                                      .Select(s =>
                                      {
@@ -46,7 +50,7 @@ namespace Samochody
                                          };
                                      });
 
-            foreach (var samochod in zapytanie)
+            foreach (var samochod in zapytanie2)
             {
                 Console.WriteLine($"{samochod.Producent} {samochod.Model}");
             }
@@ -54,17 +58,21 @@ namespace Samochody
 
         private static void TworzenieXML()
         {
+            XNamespace ns = "http://jakasstrona.pl/samochody/2018";
+            XNamespace ex = "http://jakasstrona.pl/samochody/2018/ex";
+
             var rekordy = WczytywanieSamochodu("paliwo.csv");
 
             var dokument = new XDocument();
-            var samochody = new XElement("Samochody", from rekord in rekordy
-                                                      select new XElement("Samochod",
+            var samochody = new XElement(ns + "Samochody", from rekord in rekordy
+                                                      select new XElement(ex + "Samochod",
                                                                        new XAttribute("Rok", rekord.Rok),
                                                                        new XAttribute("Producent", rekord.Producent),
                                                                        new XAttribute("Model", rekord.Model),
                                                                        new XAttribute("SpalanieAutostrada", rekord.SpalanieAutostrada),
                                                                        new XAttribute("SpalanieMiasto", rekord.SpalanieMiasto),
                                                                        new XAttribute("SpalanieMieszane", rekord.SpalanieMieszane)));
+            samochody.Add(new XAttribute(XNamespace.Xmlns + "ex", ex));
 
             dokument.Add(samochody);
             dokument.Save("paliwo.xml");
