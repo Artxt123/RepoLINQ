@@ -18,30 +18,26 @@ namespace Samochody
             //CultureInfo.CurrentCulture = newCulture;
             #endregion
 
+            TworzenieXML();
+
+        }
+
+        private static void TworzenieXML()
+        {
             var rekordy = WczytywanieSamochodu("paliwo.csv");
 
             var dokument = new XDocument();
-            var samochody = new XElement("Samochody");
+            var samochody = new XElement("Samochody", from rekord in rekordy
+                                                      select new XElement("Samochod",
+                                                                       new XAttribute("Rok", rekord.Rok),
+                                                                       new XAttribute("Producent", rekord.Producent),
+                                                                       new XAttribute("Model", rekord.Model),
+                                                                       new XAttribute("SpalanieAutostrada", rekord.SpalanieAutostrada),
+                                                                       new XAttribute("SpalanieMiasto", rekord.SpalanieMiasto),
+                                                                       new XAttribute("SpalanieMieszane", rekord.SpalanieMieszane)));
 
-            foreach (var rekord in rekordy)
-            {
-                var samochod = new XElement("Samochod");
-
-                var producent = new XElement("Producent", rekord.Producent);
-                var model = new XElement("Model", rekord.Model);
-                var spalanieAutostrada = new XElement("SpalanieAutostrada", rekord.SpalanieAutostrada);
-                var spalanieMiasto = new XElement("SpalanieMiasto", rekord.SpalanieMiasto);
-
-                samochod.Add(producent);
-                samochod.Add(model);
-                samochod.Add(spalanieAutostrada);
-                samochod.Add(spalanieMiasto);
-
-                samochody.Add(samochod);
-            }
             dokument.Add(samochody);
             dokument.Save("paliwo.xml");
-
         }
 
         private static List<Producent> WczytywanieProducenci(string sciezka)
