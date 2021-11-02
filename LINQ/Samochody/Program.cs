@@ -19,7 +19,37 @@ namespace Samochody
             #endregion
 
             TworzenieXML();
+            ZapytanieXML();
 
+        }
+
+        private static void ZapytanieXML()
+        {
+            var dokument = XDocument.Load("paliwo.xml");
+
+            var zapytanie = from samochod in dokument.Element("Samochody").Elements("Samochod") //dłuższa, bezpieczniejsza wersja dostania się do elementu Samochod
+                            where samochod.Attribute("Producent")?.Value == "Ferrari" // ? sprawi, że jak nie będzie takiego atrybutu to zostanie przypisana wartość null; pomaga to gdy są atrybuty opcjonalne; wtedy dla tych elementów, które mają jakąś wartość pod tym atrybutem to zostanie ona zostanie zachowana; a tym co mają null lub w ogóle nie ma tego atrybutu to zostanie przypisane null i program nie zgłosi wyjątku
+                            select new
+                            {
+                               Producent = samochod.Attribute("Producent").Value,
+                               Model = samochod.Attribute("Model").Value
+                            };
+
+            var zapytanie2 = dokument.Descendants("Samochod") // krótsza bardziej niebezpieczna wersja, która mówi: dajcie mi którychkolwiek POTOMKÓW o nazwie "Samochod"
+                                     .Where(s => s.Attribute("Producent").Value == "Ferrari")
+                                     .Select(s =>
+                                     {
+                                         return new
+                                         {
+                                             Producent = s.Attribute("Producent").Value,
+                                             Model = s.Attribute("Model").Value
+                                         };
+                                     });
+
+            foreach (var samochod in zapytanie)
+            {
+                Console.WriteLine($"{samochod.Producent} {samochod.Model}");
+            }
         }
 
         private static void TworzenieXML()
