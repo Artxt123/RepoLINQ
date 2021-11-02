@@ -72,6 +72,9 @@ namespace Samochody
                                                                        new XAttribute("SpalanieAutostrada", rekord.SpalanieAutostrada),
                                                                        new XAttribute("SpalanieMiasto", rekord.SpalanieMiasto),
                                                                        new XAttribute("SpalanieMieszane", rekord.SpalanieMieszane)));
+
+            //Jako nowy atrybut do Samochody dodajemy przestrzeń nazw xmlns:ex o wartości kryjącej się pod zmienną ex
+            //Dzięki tej linijce kodu, dalsze elementy, które będą miały przestrzeń nazw ex, będą odwoływać się do niej za pomocą prefiksu ex (nie będą musiały w sobie zawierać długiej nazwy tej przestrzeni nazw), który będzie aliasem do xmlns:ex zawartej jako atrybut Samochody
             samochody.Add(new XAttribute(XNamespace.Xmlns + "ex", ex));
 
             dokument.Add(samochody);
