@@ -4,6 +4,7 @@ using System.Data.Entity;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Xml.Linq;
 
 namespace Samochody
@@ -19,10 +20,19 @@ namespace Samochody
             //CultureInfo.CurrentCulture = newCulture;
             #endregion
 
+            Func<int, int> potegowanie = x => x * x;
+            Expression<Func<int, int, int>> dodawanie = (x, y) => x + y;
+
+            var dodawanieC = dodawanie.Compile();
+
+            var wynik = dodawanieC(10, 5);
+            Console.WriteLine(wynik);
+            Console.WriteLine(dodawanie);
+
             //Ta linia kodu to zabezpieczenie; polega na tym, że jeżeli zostanie coś zmienione np. w klasie Samochod, to baza danych SamochodDB zostanie usunięte i zostanie utworzona nowa - pusta baza danych
-            Database.SetInitializer(new DropCreateDatabaseIfModelChanges<SamochodDB>());
-            WstawDane();
-            ZapytanieDane();
+            //Database.SetInitializer(new DropCreateDatabaseIfModelChanges<SamochodDB>());
+            //WstawDane();
+            //ZapytanieDane();
 
         }
 
