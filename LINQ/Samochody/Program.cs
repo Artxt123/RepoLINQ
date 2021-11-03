@@ -30,6 +30,8 @@ namespace Samochody
         {
             var samochody = WczytywanieSamochodu("paliwo.csv");
             var db = new SamochodDB(); //dzięki tej linijce kodu i EntityFramework, zostanie stworzona baza danych o nazwie SamochodDB, w której zostanie utworzona tabela Samochody, która będzia miała kolumny takie jak właściwości w obiekcie Samochod
+            db.Database.Log = Console.WriteLine;
+
 
             if (!db.Samochody.Any()) //jeżeli w bazie danych w tabeli samochody nie ma żadnego samochodu (tzn. jeżeli tabela jest pusta) to wtedy będziemy wstawiać samochody
             {
@@ -43,7 +45,22 @@ namespace Samochody
 
         private static void ZapytanieDane()
         {
-            
+            var db = new SamochodDB();
+            db.Database.Log = Console.WriteLine;
+
+            var zapytanie = from samochod in db.Samochody
+                            orderby samochod.SpalanieAutostrada descending, samochod.Producent ascending
+                            select samochod;
+
+            var zapytanie2 = db.Samochody.Where(s => s.Producent == "Audi")
+                                         .OrderByDescending(s => s.SpalanieAutostrada)
+                                         .ThenBy(s => s.Model)
+                                         .Take(10);
+
+            foreach (var samochod in zapytanie2)
+            {
+                Console.WriteLine($"{samochod.Producent} {samochod.Model} : {samochod.SpalanieAutostrada}");
+            }
         }
 
         private static void ZapytanieXML()
