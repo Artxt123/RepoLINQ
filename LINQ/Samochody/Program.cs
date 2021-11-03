@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -18,9 +19,31 @@ namespace Samochody
             //CultureInfo.CurrentCulture = newCulture;
             #endregion
 
-            TworzenieXML();
-            ZapytanieXML();
+            //Ta linia kodu to zabezpieczenie; polega na tym, że jeżeli zostanie coś zmienione np. w klasie Samochod, to baza danych SamochodDB zostanie usunięte i zostanie utworzona nowa - pusta baza danych
+            Database.SetInitializer(new DropCreateDatabaseIfModelChanges<SamochodDB>());
+            WstawDane();
+            ZapytanieDane();
 
+        }
+
+        private static void WstawDane()
+        {
+            var samochody = WczytywanieSamochodu("paliwo.csv");
+            var db = new SamochodDB(); //dzięki tej linijce kodu i EntityFramework, zostanie stworzona baza danych o nazwie SamochodDB, w której zostanie utworzona tabela Samochody, która będzia miała kolumny takie jak właściwości w obiekcie Samochod
+
+            if (!db.Samochody.Any()) //jeżeli w bazie danych w tabeli samochody nie ma żadnego samochodu (tzn. jeżeli tabela jest pusta) to wtedy będziemy wstawiać samochody
+            {
+                foreach (var samochod in samochody)
+                {
+                    db.Samochody.Add(samochod);
+                }
+                db.SaveChanges();
+            }
+        }
+
+        private static void ZapytanieDane()
+        {
+            
         }
 
         private static void ZapytanieXML()
