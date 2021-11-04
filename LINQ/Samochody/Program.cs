@@ -20,20 +20,10 @@ namespace Samochody
             //CultureInfo.CurrentCulture = newCulture;
             #endregion
 
-            Func<int, int> potegowanie = x => x * x;
-            Expression<Func<int, int, int>> dodawanie = (x, y) => x + y;
-
-            var dodawanieC = dodawanie.Compile();
-
-            var wynik = dodawanieC(10, 5);
-            Console.WriteLine(wynik);
-            Console.WriteLine(dodawanie);
-
             //Ta linia kodu to zabezpieczenie; polega na tym, że jeżeli zostanie coś zmienione np. w klasie Samochod, to baza danych SamochodDB zostanie usunięte i zostanie utworzona nowa - pusta baza danych
-            //Database.SetInitializer(new DropCreateDatabaseIfModelChanges<SamochodDB>());
-            //WstawDane();
-            //ZapytanieDane();
-
+            Database.SetInitializer(new DropCreateDatabaseIfModelChanges<SamochodDB>());
+            WstawDane();
+            ZapytanieDane();
         }
 
         private static void WstawDane()
@@ -65,12 +55,23 @@ namespace Samochody
             var zapytanie2 = db.Samochody.Where(s => s.Producent == "Audi")
                                          .OrderByDescending(s => s.SpalanieAutostrada)
                                          .ThenBy(s => s.Model)
-                                         .Take(10);
+                                         .Take(10)
+                                         .ToList() //ToList sprawi, że od tej pory nie będzie operować na IQueryable tylko na IEnumerable. IEnumerable zawsze działa w pamięci
+                                         .Select(s => new
+                                         {
+                                             Model = s.Model.Split(' ') //Split nie zadziała jeżeli byśmy operowali na IQueryable, bo EntityFramework nie potrafi przetłumaczyć tej metody na SQL, dlatego wcześniej musieliśmy przekształcić zapytanie na IEnumerable za pomocą ToLIst
+                                         });
 
-            foreach (var samochod in zapytanie2)
+            foreach (var item in zapytanie2)
             {
-                Console.WriteLine($"{samochod.Producent} {samochod.Model} : {samochod.SpalanieAutostrada}");
+                Console.WriteLine(item.Model[0]);
             }
+
+            //Console.WriteLine(zapytanie2.Count()); //dzięki ToList, które jest w zapytaniu pozbywamy się odroczonego wykonania i za tą metodą wykona się od razu następna, bez ponownego wysyłania zapytania do bazy danych SQL
+            //foreach (var samochod in zapytanie2)
+            //{
+            //    Console.WriteLine($"{samochod.Producent} {samochod.Model} : {samochod.SpalanieAutostrada}");
+            //}
         }
 
         private static void ZapytanieXML()
