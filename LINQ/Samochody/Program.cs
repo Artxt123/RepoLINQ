@@ -49,29 +49,33 @@ namespace Samochody
             db.Database.Log = Console.WriteLine;
 
             var zapytanie = from samochod in db.Samochody
-                            orderby samochod.SpalanieAutostrada descending, samochod.Producent ascending
-                            select samochod;
+                            group samochod by samochod.Producent into producent
+                            select new
+                            {
+                                Producent = producent.Key,
+                                //Samochody = producent.OrderByDescending(s => s.SpalanieAutostrada).Take(2) Można też zastosować tutaj składnie zapytania:
+                                Samochody = (from samochod in producent
+                                            orderby samochod.SpalanieAutostrada descending
+                                            select samochod).Take(2)
+                            };
+                            
 
-            var zapytanie2 = db.Samochody.Where(s => s.Producent == "Audi")
-                                         .OrderByDescending(s => s.SpalanieAutostrada)
-                                         .ThenBy(s => s.Model)
-                                         .Take(10)
-                                         .ToList() //ToList sprawi, że od tej pory nie będzie operować na IQueryable tylko na IEnumerable. IEnumerable zawsze działa w pamięci
-                                         .Select(s => new
+            //Pobieramy dwa samochody od każdego producenta, które mają najwyższy wynik spalania na autostradzie (im wyższy wynik, tym mniej paliwa spala)
+            var zapytanie2 = db.Samochody.GroupBy(s => s.Producent)
+                                         .Select(g => new
                                          {
-                                             Model = s.Model.Split(' ') //Split nie zadziała jeżeli byśmy operowali na IQueryable, bo EntityFramework nie potrafi przetłumaczyć tej metody na SQL, dlatego wcześniej musieliśmy przekształcić zapytanie na IEnumerable za pomocą ToLIst
+                                             Producent = g.Key,
+                                             Samochody = g.OrderByDescending(s => s.SpalanieAutostrada).Take(2)
                                          });
 
-            foreach (var item in zapytanie2)
+            foreach (var grupa in zapytanie)
             {
-                Console.WriteLine(item.Model[0]);
+                Console.WriteLine(grupa.Producent);
+                foreach (var samochod in grupa.Samochody)
+                {
+                    Console.WriteLine($"\t{samochod.Model} : {samochod.SpalanieAutostrada}");
+                }
             }
-
-            //Console.WriteLine(zapytanie2.Count()); //dzięki ToList, które jest w zapytaniu pozbywamy się odroczonego wykonania i za tą metodą wykona się od razu następna, bez ponownego wysyłania zapytania do bazy danych SQL
-            //foreach (var samochod in zapytanie2)
-            //{
-            //    Console.WriteLine($"{samochod.Producent} {samochod.Model} : {samochod.SpalanieAutostrada}");
-            //}
         }
 
         private static void ZapytanieXML()
@@ -86,8 +90,8 @@ namespace Samochody
                             where samochod.Attribute("Producent")?.Value == "Ferrari" // ? sprawi, że jak nie będzie takiego atrybutu to zostanie przypisana wartość null; pomaga to gdy są atrybuty opcjonalne; wtedy dla tych elementów, które mają jakąś wartość pod tym atrybutem to zostanie ona zostanie zachowana; a tym co mają null lub w ogóle nie ma tego atrybutu to zostanie przypisane null i program nie zgłosi wyjątku
                             select new
                             {
-                               Producent = samochod.Attribute("Producent").Value,
-                               Model = samochod.Attribute("Model").Value
+                                Producent = samochod.Attribute("Producent").Value,
+                                Model = samochod.Attribute("Model").Value
                             };
 
             var zapytanie2 = dokument.Descendants(ex + "Samochod") // krótsza bardziej niebezpieczna wersja, która mówi: dajcie mi którychkolwiek POTOMKÓW o nazwie "Samochod"
@@ -116,13 +120,13 @@ namespace Samochody
 
             var dokument = new XDocument();
             var samochody = new XElement(ns + "Samochody", from rekord in rekordy
-                                                      select new XElement(ex + "Samochod",
-                                                                       new XAttribute("Rok", rekord.Rok),
-                                                                       new XAttribute("Producent", rekord.Producent),
-                                                                       new XAttribute("Model", rekord.Model),
-                                                                       new XAttribute("SpalanieAutostrada", rekord.SpalanieAutostrada),
-                                                                       new XAttribute("SpalanieMiasto", rekord.SpalanieMiasto),
-                                                                       new XAttribute("SpalanieMieszane", rekord.SpalanieMieszane)));
+                                                           select new XElement(ex + "Samochod",
+                                                                            new XAttribute("Rok", rekord.Rok),
+                                                                            new XAttribute("Producent", rekord.Producent),
+                                                                            new XAttribute("Model", rekord.Model),
+                                                                            new XAttribute("SpalanieAutostrada", rekord.SpalanieAutostrada),
+                                                                            new XAttribute("SpalanieMiasto", rekord.SpalanieMiasto),
+                                                                            new XAttribute("SpalanieMieszane", rekord.SpalanieMieszane)));
 
             //Jako nowy atrybut do Samochody dodajemy przestrzeń nazw xmlns:ex o wartości kryjącej się pod zmienną ex
             //Dzięki tej linijce kodu, dalsze elementy, które będą miały przestrzeń nazw ex, będą odwoływać się do niej za pomocą prefiksu ex (nie będą musiały w sobie zawierać długiej nazwy tej przestrzeni nazw), który będzie aliasem do xmlns:ex zawartej jako atrybut Samochody
